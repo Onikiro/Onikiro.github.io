@@ -1,0 +1,524 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Фракция - Zone Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .faction-card {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .ability-card {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            border: 1px solid #6b7280;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+        
+        .ability-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .ability-card.cooldown {
+            opacity: 0.6;
+            cursor: not-allowed;
+        }
+        
+        .progress-bar {
+            background: #374151;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 24px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #3b82f6, #1d4ed8);
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .territory-hex {
+            width: 40px;
+            height: 40px;
+            background: #3b82f6;
+            border: 2px solid #60a5fa;
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            transition: all 0.3s ease;
+        }
+        
+        .territory-hex.enemy {
+            background: #dc2626;
+            border-color: #f87171;
+        }
+        
+        .territory-hex.neutral {
+            background: #6b7280;
+            border-color: #9ca3af;
+        }
+        
+        .leader-card {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 2px solid #fbbf24;
+            border-radius: 12px;
+        }
+        
+        .event-card {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            border: 1px solid #6b7280;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .event-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-inter min-h-screen pb-20">
+    <!-- Шапка -->
+    <header class="bg-gray-800/90 backdrop-blur-sm border-b border-gray-700 px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">
+                    ← Назад
+                </button>
+                <h1 class="font-orbitron text-xl font-bold text-yellow-400">ФРАКЦИЯ</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <div class="w-2 h-2 bg-blue-400 rounded-full animate-pulse"></div>
+                    <span class="text-sm text-blue-400">Искатели</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="p-4 space-y-6">
+        <!-- Информация о фракции -->
+        <div class="faction-card p-6">
+            <div class="flex items-center space-x-4 mb-4">
+                <div class="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center">
+                    <span class="text-2xl">🔬</span>
+                </div>
+                <div class="flex-1">
+                    <h2 class="font-orbitron text-2xl font-bold mb-2">Искатели</h2>
+                    <p class="text-blue-200 text-sm mb-3">Учёные и исследователи, изучающие тайны Зоны. Стремятся к пониманию природы аномалий и артефактов.</p>
+                    <div class="flex items-center space-x-4 text-sm">
+                        <div class="flex items-center space-x-2">
+                            <span class="text-gray-300">Участников:</span>
+                            <span class="font-semibold">1,247</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-gray-300">Контроль:</span>
+                            <span class="font-semibold">12/36 гексов</span>
+                        </div>
+                        <div class="flex items-center space-x-2">
+                            <span class="text-gray-300">Репутация:</span>
+                            <span class="font-semibold text-yellow-400">127/500</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Способности фракции -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Способности фракции</h2>
+            <div class="grid grid-cols-1 gap-4">
+                <!-- Пассивные способности -->
+                <div>
+                    <h3 class="font-semibold text-sm text-gray-400 mb-3">Пассивные способности</h3>
+                    <div class="space-y-3">
+                        <div class="ability-card p-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-2xl">🔍</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Artifact Sense</div>
+                                    <div class="text-xs text-gray-400">+15% шанс найти редкий лут при поиске</div>
+                                </div>
+                                <div class="text-green-400 text-sm font-semibold">Активно</div>
+                            </div>
+                        </div>
+                        
+                        <div class="ability-card p-3">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-2xl">🛡️</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Fortify</div>
+                                    <div class="text-xs text-gray-400">+20% к защите контролируемых гексов</div>
+                                </div>
+                                <div class="text-green-400 text-sm font-semibold">Активно</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Активные способности -->
+                <div>
+                    <h3 class="font-semibold text-sm text-gray-400 mb-3">Активные способности</h3>
+                    <div class="space-y-3">
+                        <div class="ability-card p-3" onclick="useAbility('scan')">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-2xl">🔍</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Сканировать местность</div>
+                                    <div class="text-xs text-gray-400">С шансом 75% найти артефакт или тайник</div>
+                                </div>
+                                <div class="text-xs text-yellow-400">15 мин CD</div>
+                            </div>
+                        </div>
+                        
+                        <div class="ability-card p-3" onclick="useAbility('research')">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-2xl">⚗️</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Исследование</div>
+                                    <div class="text-xs text-gray-400">+50% к репутации фракции на 1 час</div>
+                                </div>
+                                <div class="text-xs text-yellow-400">2 часа CD</div>
+                            </div>
+                        </div>
+                        
+                        <div class="ability-card p-3" onclick="useAbility('artifact-field')">
+                            <div class="flex items-center space-x-3">
+                                <div class="text-2xl">💎</div>
+                                <div class="flex-1">
+                                    <div class="font-semibold text-sm">Поле артефактов</div>
+                                    <div class="text-xs text-gray-400">Создать зону с повышенным шансом артефактов</div>
+                                </div>
+                                <div class="text-xs text-yellow-400">6 часов CD</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Территориальный контроль -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Территориальный контроль</h2>
+            
+            <div class="grid grid-cols-6 gap-2 mb-4">
+                <!-- Генерация гексов карты -->
+                <div class="territory-hex" title="База Искателей">🏠</div>
+                <div class="territory-hex" title="Аномалия">⚡</div>
+                <div class="territory-hex neutral" title="Нейтральный">❓</div>
+                <div class="territory-hex enemy" title="База ОПГ">💀</div>
+                <div class="territory-hex" title="Торговая точка">💰</div>
+                <div class="territory-hex" title="Исследовательский лагерь">🔬</div>
+                <div class="territory-hex neutral" title="Спорная территория">⚔️</div>
+                <div class="territory-hex" title="Аванпост">🛡️</div>
+                <div class="territory-hex" title="Ресурсы">📦</div>
+                <div class="territory-hex enemy" title="Патруль ОПГ">👥</div>
+                <div class="territory-hex" title="Артефакты">💎</div>
+                <div class="territory-hex neutral" title="Незанятое пространство">🗺️</div>
+            </div>
+            
+            <div class="flex items-center justify-center space-x-6 text-xs">
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 bg-blue-600 rounded"></div>
+                    <span>Искатели (12)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 bg-red-600 rounded"></div>
+                    <span>ОПГ (8)</span>
+                </div>
+                <div class="flex items-center space-x-2">
+                    <div class="w-4 h-4 bg-gray-600 rounded"></div>
+                    <span>Нейтрально (16)</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Лидеры фракции -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Лидеры фракции</h2>
+            
+            <div class="space-y-3">
+                <div class="leader-card p-4">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-12 h-12 bg-yellow-600 rounded-full flex items-center justify-center">
+                            <span class="text-xl">👑</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">ZoneMaster</div>
+                            <div class="text-sm text-yellow-200">Главнокомандующий</div>
+                            <div class="text-xs text-gray-400">Уровень 15 • На посту 45 дней</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-semibold">2,847 очков</div>
+                            <div class="text-xs text-gray-400">рейтинга</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="event-card p-3">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-blue-600 rounded-full flex items-center justify-center">
+                            <span class="text-lg">⭐</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Stalker_2024</div>
+                            <div class="text-sm text-blue-200">Стратег</div>
+                            <div class="text-xs text-gray-400">Уровень 12 • Помощник лидера</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-semibold">2,156 очков</div>
+                            <div class="text-xs text-gray-400">рейтинга</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="event-card p-3">
+                    <div class="flex items-center space-x-4">
+                        <div class="w-10 h-10 bg-green-600 rounded-full flex items-center justify-center">
+                            <span class="text-lg">🔬</span>
+                        </div>
+                        <div class="flex-1">
+                            <div class="font-semibold">Scientist</div>
+                            <div class="text-sm text-green-200">Главный исследователь</div>
+                            <div class="text-xs text-gray-400">Уровень 11 • Отвечает за артефакты</div>
+                        </div>
+                        <div class="text-right">
+                            <div class="text-sm font-semibold">1,923 очков</div>
+                            <div class="text-xs text-gray-400">рейтинга</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ближайшие события -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Ближайшие события</h2>
+            
+            <div class="space-y-3">
+                <div class="event-card p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Рейд на гекс (3,4)</div>
+                        <span class="text-xs text-orange-400">Через 15 мин</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-3">
+                        Организатор: Stalker_2024 • Участников: 5/8
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="joinEvent('raid')" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-xs font-semibold">
+                            Присоединиться
+                        </button>
+                        <button onclick="showEventDetails('raid')" class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-xs">
+                            Детали
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="event-card p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Исследование аномалии</div>
+                        <span class="text-xs text-blue-400">Через 1 час</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-3">
+                        Организатор: Scientist • Требуется: 3 игрока с детекторами
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="joinEvent('research')" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs font-semibold">
+                            Записаться
+                        </button>
+                        <button onclick="showEventDetails('research')" class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-xs">
+                            Детали
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="event-card p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Защита аванпоста</div>
+                        <span class="text-xs text-red-400">Через 2 часа</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-3">
+                        Автоматическое событие • Вероятность атаки: 75%
+                    </div>
+                    <div class="flex space-x-2">
+                        <button onclick="joinEvent('defense')" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs font-semibold">
+                            Защищать
+                        </button>
+                        <button onclick="showEventDetails('defense')" class="bg-gray-600 hover:bg-gray-700 px-3 py-1 rounded text-xs">
+                            Детали
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Награды фракции -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Награды фракции</h2>
+            
+            <div class="space-y-3">
+                <div class="flex items-center justify-between p-3 bg-gradient-to-r from-blue-600/20 to-transparent rounded">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">🏆</div>
+                        <div>
+                            <div class="font-semibold text-sm">За контроль территорий</div>
+                            <div class="text-xs text-gray-400">+15% к доходу от активностей</div>
+                        </div>
+                    </div>
+                    <div class="text-green-400 text-sm font-semibold">Активно</div>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gradient-to-r from-purple-600/20 to-transparent rounded">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">💎</div>
+                        <div>
+                            <div class="font-semibold text-sm">Бонус за артефакты</div>
+                            <div class="text-xs text-gray-400">+25% шанс найти редкий артефакт</div>
+                        </div>
+                    </div>
+                    <div class="text-green-400 text-sm font-semibold">Активно</div>
+                </div>
+                
+                <div class="flex items-center justify-between p-3 bg-gradient-to-r from-gray-600/20 to-transparent rounded opacity-60">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">⚡</div>
+                        <div>
+                            <div class="font-semibold text-sm">Энергетический щит</div>
+                            <div class="text-xs text-gray-400">+30% к защите всех гексов</div>
+                        </div>
+                    </div>
+                    <div class="text-gray-400 text-sm">Требуется 15/20 гексов</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Нижняя навигация -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700 px-4 py-2 z-50">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='index.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Карта</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-blue-400">
+                <div class="w-6 h-6 bg-blue-600 rounded"></div>
+                <span class="text-xs">Фракция</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='inventory.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Инвентарь</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='social.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Социальные</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='arena.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Арена</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='quests.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Квесты</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='clan.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Кланы</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='casino.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Казино</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // Использование способности фракции
+        function useAbility(ability) {
+            const abilities = {
+                'scan': {
+                    name: 'Сканирование местности',
+                    description: 'Вы сканируете местность и находите ценные ресурсы!',
+                    reward: 'Найден артефакт "Лунный свет"'
+                },
+                'research': {
+                    name: 'Исследование',
+                    description: 'Вы начинаете научное исследование!',
+                    reward: 'Бафф активирован на 1 час'
+                },
+                'artifact-field': {
+                    name: 'Поле артефактов',
+                    description: 'Создана зона повышенной активности артефактов!',
+                    reward: 'Зона активна 30 минут'
+                }
+            };
+            
+            const abilityInfo = abilities[ability];
+            if (abilityInfo) {
+                alert(`${abilityInfo.name}\n\n${abilityInfo.description}\n\n${abilityInfo.reward}`);
+                
+                // Добавить кулдаун
+                event.target.closest('.ability-card').classList.add('cooldown');
+                setTimeout(() => {
+                    event.target.closest('.ability-card').classList.remove('cooldown');
+                }, 30000); // 30 секунд для демонстрации
+            }
+        }
+        
+        // Присоединиться к событию
+        function joinEvent(eventType) {
+            const events = {
+                'raid': 'Рейд на гекс (3,4)',
+                'research': 'Исследование аномалии',
+                'defense': 'Защита аванпоста'
+            };
+            
+            const eventName = events[eventType];
+            alert(`Вы присоединились к событию: ${eventName}`);
+        }
+        
+        // Показать детали события
+        function showEventDetails(eventType) {
+            const details = {
+                'raid': 'Рейд на гекс (3,4)\n\nТребуется: 8 игроков\nНаграды: +50 репутации, редкий лут\nВремя: 30 минут',
+                'research': 'Исследование аномалии\n\nТребуется: 3 игрока с детекторами\nНаграды: +30 репутации, артефакты\nВремя: 45 минут',
+                'defense': 'Защита аванпоста\n\nАвтоматическое событие\nНаграды: +25 репутации, бонусы фракции\nВремя: 20 минут'
+            };
+            
+            alert(details[eventType]);
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обновление прогресса территориального контроля каждые 30 секунд
+            setInterval(() => {
+                // Симуляция изменения контроля
+                const hexes = document.querySelectorAll('.territory-hex');
+                hexes.forEach(hex => {
+                    if (Math.random() < 0.05) { // 5% шанс изменения
+                        if (hex.classList.contains('neutral')) {
+                            hex.classList.remove('neutral');
+                            hex.classList.add(Math.random() < 0.5 ? 'territory-hex' : 'enemy');
+                        }
+                    }
+                });
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

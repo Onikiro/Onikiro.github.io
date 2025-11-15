@@ -1,0 +1,626 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Арена - Zone Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .arena-card {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            border: 1px solid #6b7280;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .arena-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .arena-active {
+            border-color: #22c55e;
+            background: linear-gradient(135deg, #166534, #22c55e);
+        }
+        
+        .arena-boss {
+            border-color: #dc2626;
+            background: linear-gradient(135deg, #991b1b, #dc2626);
+        }
+        
+        .battle-timer {
+            background: #374151;
+            border-radius: 50%;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+        }
+        
+        .health-bar {
+            background: #374151;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 12px;
+        }
+        
+        .health-fill {
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .enemy-health-fill {
+            background: linear-gradient(90deg, #dc2626, #b91c1c);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+        
+        .battle-action {
+            background: linear-gradient(135deg, #d4a574, #b8956a);
+            border: none;
+            border-radius: 8px;
+            color: #1a1a1a;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .battle-action:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(212, 165, 116, 0.4);
+        }
+        
+        .battle-action:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .leaderboard-entry {
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+            border: 1px solid #718096;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .leaderboard-entry.top-3 {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #92400e, #f59e0b);
+        }
+        
+        .reward-item {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            border: 1px solid #6b7280;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .reward-item.claimed {
+            opacity: 0.6;
+            border-color: #22c55e;
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            border: 1px solid #4b5563;
+            border-radius: 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-inter min-h-screen pb-20">
+    <!-- Шапка -->
+    <header class="bg-gray-800/90 backdrop-blur-sm border-b border-gray-700 px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">
+                    ← Назад
+                </button>
+                <h1 class="font-orbitron text-xl font-bold text-yellow-400">АРЕНА</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-yellow-400 font-mono text-sm">🏆</span>
+                    <span id="arena-rating" class="font-semibold">1,247</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="p-4 space-y-6">
+        <!-- Быстрый бой -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Быстрый бой</h2>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <div class="arena-card p-4 cursor-pointer" onclick="startBattle('mutant')">
+                    <div class="text-center">
+                        <div class="text-3xl mb-2">🧟</div>
+                        <div class="font-semibold text-sm">Мутанты</div>
+                        <div class="text-xs text-gray-400">Сложность: ★★☆</div>
+                        <div class="text-xs text-green-400 mt-1">Награда: ₽50-100</div>
+                    </div>
+                </div>
+                
+                <div class="arena-card p-4 cursor-pointer" onclick="startBattle('bandit')">
+                    <div class="text-center">
+                        <div class="text-3xl mb-2">💀</div>
+                        <div class="font-semibold text-sm">Бандиты</div>
+                        <div class="text-xs text-gray-400">Сложность: ★★★</div>
+                        <div class="text-xs text-green-400 mt-1">Награда: ₽75-150</div>
+                    </div>
+                </div>
+                
+                <div class="arena-card arena-boss p-4 cursor-pointer" onclick="startBattle('boss')">
+                    <div class="text-center">
+                        <div class="text-3xl mb-2">👹</div>
+                        <div class="font-semibold text-sm">Босс</div>
+                        <div class="text-xs text-red-400">Сложность: ★★★★★</div>
+                        <div class="text-xs text-yellow-400 mt-1">Награда: Артефакт</div>
+                    </div>
+                </div>
+                
+                <div class="arena-card p-4 cursor-pointer" onclick="startBattle('horde')">
+                    <div class="text-center">
+                        <div class="text-3xl mb-2">👥</div>
+                        <div class="font-semibold text-sm">Орда</div>
+                        <div class="text-xs text-gray-400">Сложность: ★★★★</div>
+                        <div class="text-xs text-green-400 mt-1">Награда: ₽100-200</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="bg-blue-600/20 border border-blue-600 rounded-lg p-3">
+                <div class="flex items-center justify-between">
+                    <div>
+                        <div class="font-semibold text-sm">Ежедневная арена</div>
+                        <div class="text-xs text-gray-400">5 боёв до награды</div>
+                    </div>
+                    <div class="text-right">
+                        <div class="text-sm font-semibold text-blue-400">3/5</div>
+                        <div class="text-xs text-gray-400">побед</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Текущий бой -->
+        <div id="battle-screen" class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4 hidden">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Бой в процессе</h2>
+            
+            <div class="grid grid-cols-2 gap-4 mb-4">
+                <!-- Игрок -->
+                <div class="text-center">
+                    <div class="text-4xl mb-2">🧑‍🚀</div>
+                    <div class="font-semibold mb-2">Вы</div>
+                    <div class="health-bar mb-2">
+                        <div id="player-health" class="health-fill" style="width: 100%"></div>
+                    </div>
+                    <div class="text-sm text-gray-400">100/100 HP</div>
+                </div>
+                
+                <!-- Противник -->
+                <div class="text-center">
+                    <div id="enemy-icon" class="text-4xl mb-2">🧟</div>
+                    <div id="enemy-name" class="font-semibold mb-2">Мутант</div>
+                    <div class="health-bar mb-2">
+                        <div id="enemy-health" class="enemy-health-fill" style="width: 100%"></div>
+                    </div>
+                    <div id="enemy-hp" class="text-sm text-gray-400">150/150 HP</div>
+                </div>
+            </div>
+            
+            <!-- Боевые действия -->
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <button class="battle-action py-2 text-sm" onclick="playerAction('attack')">
+                    ⚔️ Атаковать
+                </button>
+                <button class="battle-action py-2 text-sm" onclick="playerAction('defend')">
+                    🛡️ Защищаться
+                </button>
+                <button class="battle-action py-2 text-sm" onclick="playerAction('special')">
+                    ⚡ Спецспособность
+                </button>
+                <button class="battle-action py-2 text-sm" onclick="playerAction('item')">
+                    💊 Предмет
+                </button>
+            </div>
+            
+            <!-- Лог боя -->
+            <div id="battle-log" class="bg-gray-700/50 rounded-lg p-3 h-24 overflow-y-auto text-sm">
+                <div class="text-gray-400">Бой начался...</div>
+            </div>
+        </div>
+
+        <!-- Рейтинговая таблица -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Рейтинговая таблица</h2>
+            
+            <div class="space-y-3">
+                <div class="leaderboard-entry top-3 p-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-bold text-yellow-400">1</span>
+                            <div>
+                                <div class="font-semibold text-sm">ArenaMaster</div>
+                                <div class="text-xs text-gray-400">Уровень 15 • 89 побед</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold text-sm">3,247 очков</div>
+                            <div class="text-xs text-yellow-400">⭐ Легенда</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="leaderboard-entry top-3 p-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-bold text-gray-400">2</span>
+                            <div>
+                                <div class="font-semibold text-sm">Gladiator</div>
+                                <div class="text-xs text-gray-400">Уровень 12 • 67 побед</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold text-sm">2,891 очков</div>
+                            <div class="text-xs text-gray-400">💎 Мастер</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="leaderboard-entry top-3 p-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-bold text-orange-400">3</span>
+                            <div>
+                                <div class="font-semibold text-sm">Warrior</div>
+                                <div class="text-xs text-gray-400">Уровень 10 • 45 побед</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold text-sm">2,456 очков</div>
+                            <div class="text-xs text-gray-400">🏆 Эксперт</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="leaderboard-entry p-3">
+                    <div class="flex items-center justify-between">
+                        <div class="flex items-center space-x-3">
+                            <span class="font-bold text-blue-400">8</span>
+                            <div>
+                                <div class="font-semibold text-sm">Вы</div>
+                                <div class="text-xs text-gray-400">Уровень 5 • 12 побед</div>
+                            </div>
+                        </div>
+                        <div class="text-right">
+                            <div class="font-semibold text-sm">1,247 очков</div>
+                            <div class="text-xs text-gray-400">⚡ Боец</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Награды за арену -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Награды за арену</h2>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="reward-item p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">🏆</div>
+                        <div class="font-semibold text-sm">5 побед</div>
+                        <div class="text-xs text-gray-400">₽500 + артефакт</div>
+                    </div>
+                </div>
+                
+                <div class="reward-item p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">💎</div>
+                        <div class="font-semibold text-sm">10 побед</div>
+                        <div class="text-xs text-gray-400">₽1000 + редкий артефакт</div>
+                    </div>
+                </div>
+                
+                <div class="reward-item claimed p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">⚡</div>
+                        <div class="font-semibold text-sm">15 побед</div>
+                        <div class="text-xs text-gray-400">₽1500 + эпик артефакт</div>
+                        <div class="text-xs text-green-400 mt-1">✓ Получено</div>
+                    </div>
+                </div>
+                
+                <div class="reward-item p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">🔥</div>
+                        <div class="font-semibold text-sm">25 побед</div>
+                        <div class="text-xs text-gray-400">₽2500 + легендарный артефакт</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Нижняя навигация -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700 px-4 py-2 z-50">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='index.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Карта</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='faction.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Фракция</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='inventory.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Инвентарь</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='social.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Социальные</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-blue-400">
+                <div class="w-6 h-6 bg-blue-600 rounded"></div>
+                <span class="text-xs">Арена</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Модальное окно результата боя -->
+    <div id="battle-result-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-content max-w-md w-full mx-4 p-6">
+            <div class="text-center">
+                <div id="result-icon" class="text-6xl mb-4">🏆</div>
+                <h2 id="result-title" class="font-orbitron text-2xl font-bold mb-2">Победа!</h2>
+                <p id="result-description" class="text-gray-300 mb-4">Вы победили мутанта!</p>
+                
+                <div id="result-rewards" class="bg-gray-700/50 rounded-lg p-4 mb-4">
+                    <div class="text-sm text-green-400">+₽75</div>
+                    <div class="text-sm text-blue-400">+10 репутации</div>
+                    <div class="text-sm text-purple-400">Найден предмет: Батарейка</div>
+                </div>
+                
+                <div class="flex space-x-3">
+                    <button onclick="closeBattleResult()" class="battle-action flex-1 py-2">Закрыть</button>
+                    <button onclick="startNextBattle()" class="bg-gray-600 flex-1 py-2 rounded">Следующий бой</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let battleState = {
+            inProgress: false,
+            playerHealth: 100,
+            enemyHealth: 150,
+            enemyType: '',
+            turn: 'player'
+        };
+        
+        // Начать бой
+        function startBattle(type) {
+            const battleTypes = {
+                'mutant': { name: 'Мутант', health: 150, icon: '🧟', reward: { money: [50, 100], reputation: 10 } },
+                'bandit': { name: 'Бандит', health: 120, icon: '💀', reward: { money: [75, 150], reputation: 15 } },
+                'boss': { name: 'Босс', health: 300, icon: '👹', reward: { money: [200, 500], reputation: 50, artifact: true } },
+                'horde': { name: 'Орда', health: 250, icon: '👥', reward: { money: [100, 200], reputation: 25 } }
+            };
+            
+            const enemy = battleTypes[type];
+            if (!enemy) return;
+            
+            battleState = {
+                inProgress: true,
+                playerHealth: 100,
+                enemyHealth: enemy.health,
+                enemyType: type,
+                enemyData: enemy,
+                turn: 'player'
+            };
+            
+            // Показать экран боя
+            document.getElementById('battle-screen').classList.remove('hidden');
+            
+            // Обновить UI боя
+            document.getElementById('enemy-icon').textContent = enemy.icon;
+            document.getElementById('enemy-name').textContent = enemy.name;
+            document.getElementById('enemy-hp').textContent = `${enemy.health}/${enemy.health} HP`;
+            
+            // Очистить лог боя
+            document.getElementById('battle-log').innerHTML = '<div class="text-gray-400">Бой начался...</div>';
+            
+            addBattleLog(`Вы встречаете ${enemy.name}!`);
+        }
+        
+        // Действие игрока
+        function playerAction(action) {
+            if (!battleState.inProgress || battleState.turn !== 'player') return;
+            
+            const actions = {
+                'attack': { damage: [20, 35], text: 'Атакуете' },
+                'defend': { damage: [0, 0], text: 'Защищаетесь', defense: true },
+                'special': { damage: [40, 60], text: 'Используете спецспособность', cooldown: true },
+                'item': { damage: [15, 25], text: 'Используете предмет', heal: 20 }
+            };
+            
+            const playerAction = actions[action];
+            let damage = 0;
+            
+            if (playerAction.damage[0] > 0) {
+                damage = Math.floor(Math.random() * (playerAction.damage[1] - playerAction.damage[0] + 1)) + playerAction.damage[0];
+                battleState.enemyHealth -= damage;
+                addBattleLog(`Вы ${playerAction.text.toLowerCase()} и наносите ${damage} урона!`);
+            } else if (playerAction.heal) {
+                battleState.playerHealth = Math.min(100, battleState.playerHealth + playerAction.heal);
+                addBattleLog(`Вы ${playerAction.text.toLowerCase()} и восстанавливаете ${playerAction.heal} HP!`);
+                updateBattleUI();
+            } else {
+                addBattleLog(`Вы ${playerAction.text.toLowerCase()}!`);
+            }
+            
+            if (damage > 0) {
+                addBattleLog(`${battleState.enemyData.name} теряет ${damage} HP!`);
+            }
+            
+            updateBattleUI();
+            
+            // Проверить победу
+            if (battleState.enemyHealth <= 0) {
+                endBattle(true);
+                return;
+            }
+            
+            // Ход противника
+            battleState.turn = 'enemy';
+            setTimeout(() => {
+                enemyTurn();
+            }, 1500);
+        }
+        
+        // Ход противника
+        function enemyTurn() {
+            if (!battleState.inProgress) return;
+            
+            const damage = Math.floor(Math.random() * 25) + 15;
+            battleState.playerHealth -= damage;
+            
+            addBattleLog(`${battleState.enemyData.name} атакует и наносит ${damage} урона!`);
+            addBattleLog(`Вы теряете ${damage} HP!`);
+            
+            updateBattleUI();
+            
+            // Проверить поражение
+            if (battleState.playerHealth <= 0) {
+                endBattle(false);
+                return;
+            }
+            
+            // Вернуть ход игроку
+            battleState.turn = 'player';
+        }
+        
+        // Обновить UI боя
+        function updateBattleUI() {
+            const playerHealthPercent = Math.max(0, (battleState.playerHealth / 100) * 100);
+            const enemyHealthPercent = Math.max(0, (battleState.enemyHealth / battleState.enemyData.health) * 100);
+            
+            document.getElementById('player-health').style.width = `${playerHealthPercent}%`;
+            document.getElementById('enemy-health').style.width = `${enemyHealthPercent}%`;
+            
+            // Обновить HP текст
+            document.querySelector('#battle-screen .text-sm.text-gray-400').textContent = `${battleState.playerHealth}/100 HP`;
+            document.getElementById('enemy-hp').textContent = `${battleState.enemyHealth}/${battleState.enemyData.health} HP`;
+        }
+        
+        // Добавить сообщение в лог боя
+        function addBattleLog(message) {
+            const log = document.getElementById('battle-log');
+            const entry = document.createElement('div');
+            entry.textContent = message;
+            log.appendChild(entry);
+            log.scrollTop = log.scrollHeight;
+        }
+        
+        // Закончить бой
+        function endBattle(victory) {
+            battleState.inProgress = false;
+            
+            // Скрыть экран боя
+            document.getElementById('battle-screen').classList.add('hidden');
+            
+            // Показать результаты
+            showBattleResult(victory);
+        }
+        
+        // Показать результат боя
+        function showBattleResult(victory) {
+            const modal = document.getElementById('battle-result-modal');
+            const icon = document.getElementById('result-icon');
+            const title = document.getElementById('result-title');
+            const description = document.getElementById('result-description');
+            const rewards = document.getElementById('result-rewards');
+            
+            if (victory) {
+                icon.textContent = '🏆';
+                title.textContent = 'Победа!';
+                description.textContent = `Вы победили ${battleState.enemyData.name}!`;
+                
+                // Рассчитать награды
+                const moneyReward = Math.floor(Math.random() * 
+                    (battleState.enemyData.reward.money[1] - battleState.enemyData.reward.money[0] + 1)) + 
+                    battleState.enemyData.reward.money[0];
+                const reputationReward = battleState.enemyData.reward.reputation;
+                
+                rewards.innerHTML = `
+                    <div class="text-sm text-green-400">+₽${moneyReward}</div>
+                    <div class="text-sm text-blue-400">+${reputationReward} репутации</div>
+                    <div class="text-sm text-purple-400">Найден предмет: Батарейка</div>
+                `;
+                
+                // Обновить статистику
+                updatePlayerStatsAfterBattle(moneyReward, reputationReward);
+            } else {
+                icon.textContent = '💀';
+                title.textContent = 'Поражение';
+                description.textContent = `Вас победил ${battleState.enemyData.name}!`;
+                rewards.innerHTML = '<div class="text-sm text-gray-400">Попробуйте еще раз!</div>';
+            }
+            
+            modal.classList.remove('hidden');
+        }
+        
+        // Закрыть результат боя
+        function closeBattleResult() {
+            document.getElementById('battle-result-modal').classList.add('hidden');
+        }
+        
+        // Начать следующий бой
+        function startNextBattle() {
+            closeBattleResult();
+            startBattle(battleState.enemyType);
+        }
+        
+        // Обновить статистику игрока после боя
+        function updatePlayerStatsAfterBattle(money, reputation) {
+            // Получить текущие значения из localStorage
+            const savedMoney = parseInt(localStorage.getItem('playerMoney') || '0');
+            const savedReputation = parseInt(localStorage.getItem('playerReputation') || '0');
+            
+            // Обновить значения
+            const newMoney = savedMoney + money;
+            const newReputation = savedReputation + reputation;
+            
+            // Сохранить в localStorage
+            localStorage.setItem('playerMoney', newMoney.toString());
+            localStorage.setItem('playerReputation', newReputation.toString());
+            
+            // Обновить UI на главной странице
+            if (window.opener) {
+                window.opener.postMessage('updateStats', '*');
+            }
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обновить рейтинг из localStorage
+            const savedRating = localStorage.getItem('arenaRating');
+            if (savedRating) {
+                document.getElementById('arena-rating').textContent = savedRating;
+            }
+        });
+    </script>
+</body>
+</html>

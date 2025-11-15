@@ -1,0 +1,335 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Инвентарь - Zone Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .font-orbitron { font-family: 'Orbitron', monospace; }
+        .font-inter { font-family: 'Inter', sans-serif; }
+        .font-mono { font-family: 'JetBrains Mono', monospace; }
+        
+        .item-card {
+            background: linear-gradient(135deg, #2d3748, #4a5568);
+            border: 1px solid #718096;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .item-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .item-common { border-color: #9ca3af; }
+        .item-rare { border-color: #3b82f6; }
+        .item-epic { border-color: #8b5cf6; }
+        .item-legendary { border-color: #f59e0b; }
+        
+        .equipment-slot {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            border: 2px dashed #6b7280;
+            border-radius: 8px;
+            min-height: 80px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+        
+        .equipment-slot.filled {
+            border-style: solid;
+            border-color: #d4a574;
+            background: linear-gradient(135deg, #4a5568, #718096);
+        }
+        
+        .stats-bar {
+            background: #374151;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .stats-fill {
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            height: 100%;
+            transition: width 0.3s ease;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-inter min-h-screen pb-20">
+    <!-- Шапка -->
+    <header class="bg-gray-800/90 backdrop-blur-sm border-b border-gray-700 px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">
+                    ← Назад
+                </button>
+                <h1 class="font-orbitron text-xl font-bold text-yellow-400">ИНВЕНТАРЬ</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-yellow-400 font-mono text-sm">₽</span>
+                    <span id="player-money" class="font-semibold">1,247</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="p-4 space-y-6">
+        <!-- Характеристики персонажа -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Характеристики</h2>
+            <div class="space-y-3">
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-400">Уровень:</span>
+                    <span class="font-semibold text-blue-400">5</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-400">Item Power:</span>
+                    <span class="font-semibold text-green-400">247</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-400">Здоровье:</span>
+                    <span class="font-semibold text-red-400">100/100</span>
+                </div>
+                <div class="flex items-center justify-between">
+                    <span class="text-sm text-gray-400">Энергия:</span>
+                    <span class="font-semibold text-yellow-400">75/100</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Экипировка -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Экипировка</h2>
+            <div class="grid grid-cols-3 gap-3">
+                <div class="equipment-slot filled">
+                    <div class="text-center">
+                        <div class="text-2xl mb-1">🔫</div>
+                        <div class="text-xs text-gray-400">AK-74M</div>
+                        <div class="text-xs text-blue-400">Редкое</div>
+                    </div>
+                </div>
+                <div class="equipment-slot filled">
+                    <div class="text-center">
+                        <div class="text-2xl mb-1">🛡️</div>
+                        <div class="text-xs text-gray-400">Броня СЕВА</div>
+                        <div class="text-xs text-purple-400">Эпическое</div>
+                    </div>
+                </div>
+                <div class="equipment-slot filled">
+                    <div class="text-center">
+                        <div class="text-2xl mb-1">⚡</div>
+                        <div class="text-xs text-gray-400">Детектор</div>
+                        <div class="text-xs text-gray-400">Обычное</div>
+                    </div>
+                </div>
+                <div class="equipment-slot">
+                    <div class="text-center text-gray-500">
+                        <div class="text-2xl mb-1">🎒</div>
+                        <div class="text-xs">Рюкзак</div>
+                    </div>
+                </div>
+                <div class="equipment-slot filled">
+                    <div class="text-center">
+                        <div class="text-2xl mb-1">🔦</div>
+                        <div class="text-xs text-gray-400">Фонарь</div>
+                        <div class="text-xs text-gray-400">Обычное</div>
+                    </div>
+                </div>
+                <div class="equipment-slot">
+                    <div class="text-center text-gray-500">
+                        <div class="text-2xl mb-1">🧤</div>
+                        <div class="text-xs">Перчатки</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Инвентарь -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <div class="flex items-center justify-between mb-4">
+                <h2 class="font-orbitron text-lg font-bold">Рюкзак</h2>
+                <span class="text-sm text-gray-400">24/30 слотов</span>
+            </div>
+            
+            <div class="grid grid-cols-4 gap-3" id="inventory-grid">
+                <!-- Предметы будут генерироваться JavaScript -->
+            </div>
+        </div>
+
+        <!-- Артефакты -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Артефакты</h2>
+            <div class="grid grid-cols-2 gap-3">
+                <div class="item-card item-epic p-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">💎</div>
+                        <div>
+                            <div class="font-semibold text-sm">Кровавый камень</div>
+                            <div class="text-xs text-gray-400">+25% к броне</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card item-rare p-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">🔮</div>
+                        <div>
+                            <div class="font-semibold text-sm">Лунный свет</div>
+                            <div class="text-xs text-gray-400">+15% к энергии</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card item-legendary p-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">⚫</div>
+                        <div>
+                            <div class="font-semibold text-sm">Черный ворон</div>
+                            <div class="text-xs text-gray-400">+50% к урону</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="item-card item-common p-3">
+                    <div class="flex items-center space-x-3">
+                        <div class="text-2xl">🧿</div>
+                        <div>
+                            <div class="font-semibold text-sm">Кусок аномалии</div>
+                            <div class="text-xs text-gray-400">+10% к скорости</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Ресурсы -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Ресурсы</h2>
+            <div class="grid grid-cols-3 gap-3">
+                <div class="text-center">
+                    <div class="text-2xl mb-1">🔋</div>
+                    <div class="text-sm font-semibold">Батарейки</div>
+                    <div class="text-xs text-gray-400">x12</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl mb-1">💊</div>
+                    <div class="text-sm font-semibold">Медпаки</div>
+                    <div class="text-xs text-gray-400">x8</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl mb-1">🧪</div>
+                    <div class="text-sm font-semibold">Химикаты</div>
+                    <div class="text-xs text-gray-400">x5</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl mb-1">🔧</div>
+                    <div class="text-sm font-semibold">Запчасти</div>
+                    <div class="text-xs text-gray-400">x15</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl mb-1">🍖</div>
+                    <div class="text-sm font-semibold">Еда</div>
+                    <div class="text-xs text-gray-400">x20</div>
+                </div>
+                <div class="text-center">
+                    <div class="text-2xl mb-1">💧</div>
+                    <div class="text-sm font-semibold">Вода</div>
+                    <div class="text-xs text-gray-400">x18</div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Нижняя навигация -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700 px-4 py-2 z-50">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='index.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Карта</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='faction.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Фракция</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-blue-400">
+                <div class="w-6 h-6 bg-blue-600 rounded"></div>
+                <span class="text-xs">Инвентарь</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='social.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Социальные</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='arena.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Арена</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='quests.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Квесты</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='clan.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Кланы</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='casino.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Казино</span>
+            </button>
+        </div>
+    </nav>
+
+    <script>
+        // Генерация предметов в инвентаре
+        function generateInventoryItems() {
+            const inventoryGrid = document.getElementById('inventory-grid');
+            const items = [
+                { name: 'Патроны 5.45', quantity: 120, rarity: 'common', icon: '🔫' },
+                { name: 'Граната РГД', quantity: 3, rarity: 'rare', icon: '💣' },
+                { name: 'Аптечка', quantity: 5, rarity: 'common', icon: '🏥' },
+                { name: 'Энергетик', quantity: 8, rarity: 'common', icon: '⚡' },
+                { name: 'Ключ-карта', quantity: 1, rarity: 'epic', icon: '🗝️' },
+                { name: 'Карта Зоны', quantity: 1, rarity: 'rare', icon: '🗺️' },
+                { name: 'Компас', quantity: 1, rarity: 'common', icon: '🧭' },
+                { name: 'Рация', quantity: 1, rarity: 'rare', icon: '📻' },
+                { name: 'Нож', quantity: 1, rarity: 'common', icon: '🔪' },
+                { name: 'Водка', quantity: 3, rarity: 'common', icon: '🍾' },
+                { name: 'Бинокль', quantity: 1, rarity: 'rare', icon: '🔭' },
+                { name: 'Противогаз', quantity: 1, rarity: 'rare', icon: '😷' }
+            ];
+            
+            items.forEach(item => {
+                const itemElement = document.createElement('div');
+                itemElement.className = `item-card item-${item.rarity} p-2 cursor-pointer`;
+                itemElement.innerHTML = `
+                    <div class="text-center">
+                        <div class="text-lg mb-1">${item.icon}</div>
+                        <div class="text-xs font-semibold">${item.name}</div>
+                        <div class="text-xs text-gray-400">x${item.quantity}</div>
+                    </div>
+                `;
+                
+                itemElement.addEventListener('click', () => showItemDetails(item));
+                inventoryGrid.appendChild(itemElement);
+            });
+        }
+        
+        // Показать детали предмета
+        function showItemDetails(item) {
+            alert(`${item.name}\nКоличество: ${item.quantity}\nРедкость: ${item.rarity}`);
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            generateInventoryItems();
+            
+            // Обновить деньги из главного экрана
+            const savedMoney = localStorage.getItem('playerMoney');
+            if (savedMoney) {
+                document.getElementById('player-money').textContent = parseInt(savedMoney).toLocaleString();
+            }
+        });
+    </script>
+</body>
+</html>

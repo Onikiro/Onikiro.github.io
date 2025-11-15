@@ -1,0 +1,594 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Квесты и события - Zone Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .quest-card {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            border: 1px solid #6b7280;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .quest-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.3);
+        }
+        
+        .quest-active {
+            border-color: #22c55e;
+            background: linear-gradient(135deg, #166534, #22c55e);
+        }
+        
+        .quest-completed {
+            border-color: #f59e0b;
+            background: linear-gradient(135deg, #92400e, #f59e0b);
+        }
+        
+        .event-card {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            border: 2px solid #3b82f6;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .event-card.special {
+            background: linear-gradient(135deg, #7c2d12, #dc2626);
+            border-color: #f87171;
+        }
+        
+        .progress-bar {
+            background: #374151;
+            border-radius: 10px;
+            overflow: hidden;
+            height: 20px;
+        }
+        
+        .progress-fill {
+            background: linear-gradient(90deg, #22c55e, #16a34a);
+            height: 100%;
+            transition: width 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+            font-weight: bold;
+        }
+        
+        .reward-item {
+            background: linear-gradient(135deg, #374151, #4b5563);
+            border: 1px solid #6b7280;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+        
+        .daily-quest {
+            background: linear-gradient(135deg, #7c2d12, #dc2626);
+            border: 1px solid #f87171;
+            border-radius: 8px;
+        }
+        
+        .story-quest {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            border: 1px solid #3b82f6;
+            border-radius: 8px;
+        }
+        
+        .world-event {
+            background: linear-gradient(135deg, #7c2d12, #dc2626);
+            border: 2px solid #f87171;
+            border-radius: 12px;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(220, 38, 38, 0); }
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            border: 1px solid #4b5563;
+            border-radius: 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-inter min-h-screen pb-20">
+    <!-- Шапка -->
+    <header class="bg-gray-800/90 backdrop-blur-sm border-b border-gray-700 px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">
+                    ← Назад
+                </button>
+                <h1 class="font-orbitron text-xl font-bold text-yellow-400">КВЕСТЫ</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-blue-400 font-mono text-sm">📜</span>
+                    <span id="quest-points" class="font-semibold">247</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="p-4 space-y-6">
+        <!-- Мировое событие -->
+        <div class="world-event p-4">
+            <div class="flex items-center justify-between mb-3">
+                <h2 class="font-orbitron text-lg font-bold">Черная пурга</h2>
+                <span class="text-xs text-red-400">АКТИВНО</span>
+            </div>
+            <p class="text-sm text-gray-300 mb-3">
+                Масштабная аномалия охватывает всю Зону. Увеличен шанс найти редкие артефакты, но и опасность выше.
+            </p>
+            <div class="flex items-center justify-between">
+                <span class="text-xs text-gray-400">Осталось: 2 часа 15 мин</span>
+                <button onclick="joinWorldEvent()" class="bg-red-600 hover:bg-red-700 px-3 py-1 rounded text-xs font-semibold">
+                    Участвовать
+                </button>
+            </div>
+        </div>
+
+        <!-- Ежедневные задания -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Ежедневные задания</h2>
+            <div class="space-y-3">
+                <div class="daily-quest p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Исследователь дня</div>
+                        <span class="text-xs text-yellow-400">2/3</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Посетите 3 разные локации на карте
+                    </div>
+                    <div class="progress-bar mb-2">
+                        <div class="progress-fill" style="width: 67%">67%</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: ₽100 + артефакт</span>
+                        <button onclick="claimDailyReward()" class="bg-yellow-600 hover:bg-yellow-700 px-2 py-1 rounded text-xs font-semibold">
+                            Забрать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="daily-quest p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Охотник за мутантами</div>
+                        <span class="text-xs text-yellow-400">7/10</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Уничтожьте 10 мутантов на арене
+                    </div>
+                    <div class="progress-bar mb-2">
+                        <div class="progress-fill" style="width: 70%">70%</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: ₽150 + репутация</span>
+                        <button onclick="claimDailyReward()" class="bg-yellow-600 hover:bg-yellow-700 px-2 py-1 rounded text-xs font-semibold">
+                            Забрать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="daily-quest p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Торговец</div>
+                        <span class="text-xs text-yellow-400">0/1</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Совершите 1 сделку с другим игроком
+                    </div>
+                    <div class="progress-bar mb-2">
+                        <div class="progress-fill" style="width: 0%">0%</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: ₽75 + предмет</span>
+                        <button class="bg-gray-600 px-2 py-1 rounded text-xs cursor-not-allowed">
+                            В процессе
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Основные квесты -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Основные квесты</h2>
+            <div class="space-y-3">
+                <div class="story-quest p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Тайна лаборатории X-18</div>
+                        <span class="text-xs text-blue-400">Активно</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Исследуйте заброшенную лабораторию и найдите секретные документы
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: ₽500 + редкий артефакт</span>
+                        <button onclick="startQuest('lab-x18')" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs font-semibold">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="story-quest p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Путь искателя</div>
+                        <span class="text-xs text-blue-400">Глава 3</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Изучите 5 разных типов аномалий и соберите образцы
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: ₽300 + опыт</span>
+                        <button onclick="startQuest('path-seeker')" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs font-semibold">
+                            Продолжить
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="quest-card p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Защита территорий</div>
+                        <span class="text-xs text-gray-400">Завершено</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Участвуйте в защите 3 гексов вашей фракции
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда получена</span>
+                        <button class="bg-green-600 px-2 py-1 rounded text-xs cursor-not-allowed">
+                            ✓ Выполнено
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- События фракции -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">События фракции</h2>
+            <div class="space-y-3">
+                <div class="event-card p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Захват гекса (4,2)</div>
+                        <span class="text-xs text-blue-400">Через 15 мин</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Организатор: ZoneMaster • Участников: 12/20
+                    </div>
+                    <div class="progress-bar mb-2">
+                        <div class="progress-fill" style="width: 60%">60%</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: +50 репутации</span>
+                        <button onclick="joinFactionEvent('capture')" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs font-semibold">
+                            Присоединиться
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="event-card p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Рейд на артефакты</div>
+                        <span class="text-xs text-blue-400">Через 1 час</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Организатор: Scientist • Требуется: 8 игроков
+                    </div>
+                    <div class="progress-bar mb-2">
+                        <div class="progress-fill" style="width: 25%">25%</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: Редкий артефакт</span>
+                        <button onclick="joinFactionEvent('artifact')" class="bg-blue-600 hover:bg-blue-700 px-2 py-1 rounded text-xs font-semibold">
+                            Записаться
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Особые события -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Особые события</h2>
+            <div class="space-y-3">
+                <div class="event-card special p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Вызов сталкеров</div>
+                        <span class="text-xs text-red-400">Только сегодня</span>
+                    </div>
+                    <div class="text-xs text-gray-300 mb-2">
+                        Победите 20 врагов на арене за день и получите эксклюзивный титул
+                    </div>
+                    <div class="progress-bar mb-2">
+                        <div class="progress-fill" style="width: 35%">7/20</div>
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награда: Титул "Гладиатор"</span>
+                        <button onclick="joinSpecialEvent('challenge')" class="bg-red-600 hover:bg-red-700 px-2 py-1 rounded text-xs font-semibold">
+                            Принять вызов
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="quest-card p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Праздник Зоны</div>
+                        <span class="text-xs text-green-400">Через 3 дня</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Ежегодное событие с уникальными наградами и скидками
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Награды: Эксклюзивные предметы</span>
+                        <button onclick="showEventDetails('festival')" class="bg-green-600 hover:bg-green-700 px-2 py-1 rounded text-xs font-semibold">
+                            Детали
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Награды за квесты -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">Награды за квесты</h2>
+            
+            <div class="grid grid-cols-2 gap-3">
+                <div class="reward-item p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">📦</div>
+                        <div class="font-semibold text-sm">Набор сталкера</div>
+                        <div class="text-xs text-gray-400">5 квестов</div>
+                        <div class="text-xs text-green-400 mt-1">✓ Получено</div>
+                    </div>
+                </div>
+                
+                <div class="reward-item p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">💎</div>
+                        <div class="font-semibold text-sm">Артефактный кейс</div>
+                        <div class="text-xs text-gray-400">10 квестов</div>
+                        <div class="text-xs text-blue-400 mt-1">2/10</div>
+                    </div>
+                </div>
+                
+                <div class="reward-item p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">🏆</div>
+                        <div class="font-semibold text-sm">Титул "Герой"</div>
+                        <div class="text-xs text-gray-400">25 квестов</div>
+                        <div class="text-xs text-gray-400 mt-1">0/25</div>
+                    </div>
+                </div>
+                
+                <div class="reward-item p-3">
+                    <div class="text-center">
+                        <div class="text-2xl mb-2">⚡</div>
+                        <div class="font-semibold text-sm">Легендарный артефакт</div>
+                        <div class="text-xs text-gray-400">50 квестов</div>
+                        <div class="text-xs text-gray-400 mt-1">0/50</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Нижняя навигация -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700 px-4 py-2 z-50">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='index.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Карта</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='faction.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Фракция</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='inventory.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Инвентарь</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='social.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Социальные</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-blue-400">
+                <div class="w-6 h-6 bg-blue-600 rounded"></div>
+                <span class="text-xs">Квесты</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Модальное окно деталей квеста -->
+    <div id="quest-details-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-content max-w-md w-full mx-4 p-6">
+            <h2 id="quest-title" class="font-orbitron text-xl font-bold mb-4">Детали квеста</h2>
+            <div id="quest-content">
+                <!-- Контент генерируется динамически -->
+            </div>
+            <div class="flex space-x-3 mt-6">
+                <button id="quest-action-btn" class="battle-action flex-1 py-2">Начать</button>
+                <button onclick="closeQuestDetails()" class="bg-gray-600 flex-1 py-2 rounded">Закрыть</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Забрать ежедневную награду
+        function claimDailyReward() {
+            alert('Награда получена!\n\n+₽100\n+Артефакт "Кусок аномалии"');
+            
+            // Обновить прогресс
+            const questPoints = parseInt(localStorage.getItem('questPoints') || '247');
+            localStorage.setItem('questPoints', (questPoints + 10).toString());
+            document.getElementById('quest-points').textContent = questPoints + 10;
+        }
+        
+        // Начать квест
+        function startQuest(questId) {
+            const quests = {
+                'lab-x18': {
+                    title: 'Тайна лаборатории X-18',
+                    description: 'Заброшенная лаборатория скрывает множество секретов. Найдите документы и изучите аномалии.',
+                    objectives: [
+                        'Найдите вход в лабораторию',
+                        'Соберите 3 секретных документа',
+                        'Изучите аномальную зону',
+                        'Вернитесь к торговцу'
+                    ],
+                    rewards: '₽500 + редкий артефакт',
+                    difficulty: '★★★☆☆'
+                },
+                'path-seeker': {
+                    title: 'Путь искателя',
+                    description: 'Изучите различные типы аномалий и соберите образцы для исследования.',
+                    objectives: [
+                        'Найдите 5 разных типов аномалий',
+                        'Соберите образцы с каждой',
+                        'Принесите в лабораторию',
+                        'Получите результаты анализа'
+                    ],
+                    rewards: '₽300 + опыт + репутация',
+                    difficulty: '★★☆☆☆'
+                }
+            };
+            
+            const quest = quests[questId];
+            if (quest) {
+                showQuestDetails(quest);
+            }
+        }
+        
+        // Показать детали квеста
+        function showQuestDetails(quest) {
+            const modal = document.getElementById('quest-details-modal');
+            const title = document.getElementById('quest-title');
+            const content = document.getElementById('quest-content');
+            const actionBtn = document.getElementById('quest-action-btn');
+            
+            title.textContent = quest.title;
+            
+            let objectivesHtml = '';
+            quest.objectives.forEach((obj, index) => {
+                objectivesHtml += `<div class="flex items-center space-x-2 mb-1">
+                    <input type="checkbox" class="rounded" ${index === 0 ? 'checked' : ''}>
+                    <span class="text-sm">${obj}</span>
+                </div>`;
+            });
+            
+            content.innerHTML = `
+                <div class="mb-4">
+                    <p class="text-gray-300 mb-3">${quest.description}</p>
+                    <div class="bg-gray-700/50 rounded-lg p-3">
+                        <div class="text-sm font-semibold mb-2">Цели квеста:</div>
+                        ${objectivesHtml}
+                    </div>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                    <div class="bg-gray-700/50 rounded-lg p-2">
+                        <div class="text-xs text-gray-400">Сложность</div>
+                        <div class="text-sm font-semibold">${quest.difficulty}</div>
+                    </div>
+                    <div class="bg-gray-700/50 rounded-lg p-2">
+                        <div class="text-xs text-gray-400">Награда</div>
+                        <div class="text-sm font-semibold text-green-400">${quest.rewards}</div>
+                    </div>
+                </div>
+            `;
+            
+            actionBtn.textContent = 'Начать квест';
+            actionBtn.onclick = () => {
+                closeQuestDetails();
+                alert('Квест начат! Следуйте указаниям на карте.');
+            };
+            
+            modal.classList.remove('hidden');
+        }
+        
+        // Закрыть детали квеста
+        function closeQuestDetails() {
+            document.getElementById('quest-details-modal').classList.add('hidden');
+        }
+        
+        // Присоединиться к событию фракции
+        function joinFactionEvent(eventType) {
+            const events = {
+                'capture': 'захвату гекса (4,2)',
+                'artifact': 'рейду за артефактами'
+            };
+            
+            alert(`Вы присоединились к ${events[eventType]}!\n\nОжидайте начала события.`);
+        }
+        
+        // Присоединиться к мировому событию
+        function joinWorldEvent() {
+            alert('Вы присоединились к событию "Черная пурга"!\n\nВо время события:\n• +50% к шансу найти артефакты\n• +100% к опасности\n• Специальные награды за участие');
+        }
+        
+        // Присоединиться к особому событию
+        function joinSpecialEvent(eventType) {
+            if (eventType === 'challenge') {
+                alert('Вызов принят!\n\nЦель: Победить 20 врагов на арене\nВремя: 24 часа\nНаграда: Титул "Гладиатор" + эксклюзивный артефакт');
+            }
+        }
+        
+        // Показать детали события
+        function showEventDetails(eventType) {
+            const events = {
+                'festival': {
+                    title: 'Праздник Зоны',
+                    description: 'Ежегодное событие, посвященное дню основания первой исследовательской экспедиции в Зону.',
+                    activities: [
+                        'Специальные квесты',
+                        'Скидки у торговцев',
+                        'Уникальные артефакты',
+                        'Турниры на арене'
+                    ],
+                    rewards: 'Эксклюзивные предметы, титулы, артефакты'
+                }
+            };
+            
+            const event = events[eventType];
+            if (event) {
+                alert(`${event.title}\n\n${event.description}\n\nАктивности:\n${event.activities.join('\n')}\n\nНаграды: ${event.rewards}`);
+            }
+        }
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            // Обновить очки квестов из localStorage
+            const savedPoints = localStorage.getItem('questPoints');
+            if (savedPoints) {
+                document.getElementById('quest-points').textContent = savedPoints;
+            }
+            
+            // Симуляция обновления ежедневных заданий каждые 30 секунд
+            setInterval(() => {
+                // Случайное обновление прогресса
+                const progressBars = document.querySelectorAll('.progress-fill');
+                progressBars.forEach(bar => {
+                    if (Math.random() < 0.1) { // 10% шанс обновления
+                        const currentWidth = parseInt(bar.style.width) || 0;
+                        const newWidth = Math.min(100, currentWidth + Math.floor(Math.random() * 10) + 1);
+                        bar.style.width = `${newWidth}%`;
+                        bar.textContent = `${newWidth}%`;
+                    }
+                });
+            }, 30000);
+        });
+    </script>
+</body>
+</html>

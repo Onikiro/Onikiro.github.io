@@ -1,0 +1,834 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Казино - Zone Control</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .casino-card {
+            background: linear-gradient(135deg, #7c2d12, #dc2626);
+            border: 2px solid #f87171;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .casino-card:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 8px 25px rgba(0, 0, 0, 0.4);
+        }
+        
+        .slot-machine {
+            background: linear-gradient(135deg, #1e3a8a, #1e40af);
+            border: 3px solid #3b82f6;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+        }
+        
+        .slot-reel {
+            background: #000;
+            border: 2px solid #fbbf24;
+            border-radius: 8px;
+            width: 60px;
+            height: 60px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            margin: 0 5px;
+            transition: all 0.3s ease;
+        }
+        
+        .slot-reel.spinning {
+            animation: spin 0.5s linear infinite;
+        }
+        
+        @keyframes spin {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+        
+        .roulette-wheel {
+            width: 200px;
+            height: 200px;
+            border: 5px solid #fbbf24;
+            border-radius: 50%;
+            background: conic-gradient(
+                #dc2626 0deg 9.73deg,
+                #000 9.73deg 19.46deg,
+                #dc2626 19.46deg 29.19deg,
+                #000 29.19deg 38.92deg,
+                #dc2626 38.92deg 48.65deg,
+                #000 48.65deg 58.38deg,
+                #dc2626 58.38deg 68.11deg,
+                #000 68.11deg 77.84deg,
+                #dc2626 77.84deg 87.57deg,
+                #000 87.57deg 97.3deg,
+                #dc2626 97.3deg 107.03deg,
+                #000 107.03deg 116.76deg,
+                #dc2626 116.76deg 126.49deg,
+                #000 126.49deg 136.22deg,
+                #dc2626 136.22deg 145.95deg,
+                #000 145.95deg 155.68deg,
+                #dc2626 155.68deg 165.41deg,
+                #000 165.41deg 175.14deg,
+                #dc2626 175.14deg 184.87deg,
+                #000 184.87deg 194.6deg,
+                #dc2626 194.6deg 204.33deg,
+                #000 204.33deg 214.06deg,
+                #dc2626 214.06deg 223.79deg,
+                #000 223.79deg 233.52deg,
+                #dc2626 233.52deg 243.25deg,
+                #000 243.25deg 252.98deg,
+                #dc2626 252.98deg 262.71deg,
+                #000 262.71deg 272.44deg,
+                #dc2626 272.44deg 282.17deg,
+                #000 282.17deg 291.9deg,
+                #dc2626 291.9deg 301.63deg,
+                #000 301.63deg 311.36deg,
+                #dc2626 311.36deg 321.09deg,
+                #000 321.09deg 330.82deg,
+                #dc2626 330.82deg 340.55deg,
+                #000 340.55deg 350.28deg,
+                #dc2626 350.28deg 360deg
+            );
+            position: relative;
+            margin: 0 auto;
+            transition: transform 3s cubic-bezier(0.23, 1, 0.32, 1);
+        }
+        
+        .roulette-ball {
+            position: absolute;
+            width: 12px;
+            height: 12px;
+            background: #fbbf24;
+            border-radius: 50%;
+            top: -6px;
+            left: 50%;
+            transform: translateX(-50%);
+            animation: bounce 2s ease-in-out infinite;
+        }
+        
+        @keyframes bounce {
+            0%, 100% { transform: translateX(-50%) translateY(0); }
+            50% { transform: translateX(-50%) translateY(-10px); }
+        }
+        
+        .casino-button {
+            background: linear-gradient(135deg, #d4a574, #b8956a);
+            border: none;
+            border-radius: 8px;
+            color: #1a1a1a;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+        
+        .casino-button:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 15px rgba(212, 165, 116, 0.4);
+        }
+        
+        .casino-button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+            transform: none;
+        }
+        
+        .lottery-card {
+            background: linear-gradient(135deg, #7c2d12, #dc2626);
+            border: 2px solid #f87171;
+            border-radius: 12px;
+            transition: all 0.3s ease;
+        }
+        
+        .lottery-number {
+            background: #fbbf24;
+            color: #1a1a1a;
+            border-radius: 50%;
+            width: 40px;
+            height: 40px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            font-size: 18px;
+            margin: 2px;
+        }
+        
+        .lottery-number.selected {
+            background: #22c55e;
+        }
+        
+        .jackpot-display {
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            border: 3px solid #fbbf24;
+            border-radius: 16px;
+            padding: 20px;
+            text-align: center;
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.7); }
+            50% { box-shadow: 0 0 0 10px rgba(245, 158, 11, 0); }
+        }
+        
+        .modal-overlay {
+            background: rgba(0, 0, 0, 0.8);
+            backdrop-filter: blur(10px);
+        }
+        
+        .modal-content {
+            background: linear-gradient(135deg, #1f2937, #374151);
+            border: 1px solid #4b5563;
+            border-radius: 16px;
+        }
+    </style>
+</head>
+<body class="bg-gray-900 text-gray-100 font-inter min-h-screen pb-20">
+    <!-- Шапка -->
+    <header class="bg-gray-800/90 backdrop-blur-sm border-b border-gray-700 px-4 py-3">
+        <div class="flex items-center justify-between">
+            <div class="flex items-center space-x-4">
+                <button onclick="window.location.href='index.html'" class="text-gray-400 hover:text-white">
+                    ← Назад
+                </button>
+                <h1 class="font-orbitron text-xl font-bold text-yellow-400">КАЗИНО</h1>
+            </div>
+            <div class="flex items-center space-x-4">
+                <div class="flex items-center space-x-2">
+                    <span class="text-yellow-400 font-mono text-sm">₽</span>
+                    <span id="casino-money" class="font-semibold">1,247</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- Основной контент -->
+    <main class="p-4 space-y-6">
+        <!-- Джекпот -->
+        <div class="jackpot-display">
+            <div class="text-sm text-yellow-200 mb-2">ТЕКУЩИЙ ДЖЕКПОТ</div>
+            <div id="jackpot-amount" class="font-orbitron text-3xl font-bold text-white mb-2">₽128,547</div>
+            <div class="text-xs text-gray-300">Увеличивается каждый день!</div>
+        </div>
+
+        <!-- Игровые автоматы -->
+        <div class="casino-card p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4 text-center">🎰 Игровые автоматы</h2>
+            
+            <div class="slot-machine mb-4">
+                <div class="flex justify-center mb-4">
+                    <div id="slot-1" class="slot-reel">🍒</div>
+                    <div id="slot-2" class="slot-reel">🍋</div>
+                    <div id="slot-3" class="slot-reel">🍊</div>
+                </div>
+                
+                <div class="mb-4">
+                    <div class="text-sm text-gray-300 mb-2">Ставка:</div>
+                    <div class="flex justify-center space-x-2">
+                        <button onclick="setBet(10)" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-sm">₽10</button>
+                        <button onclick="setBet(50)" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-sm">₽50</button>
+                        <button onclick="setBet(100)" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-sm">₽100</button>
+                        <button onclick="setBet(500)" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-sm">₽500</button>
+                    </div>
+                    <div id="current-bet" class="text-center mt-2 font-bold">Текущая ставка: ₽50</div>
+                </div>
+                
+                <button id="spin-button" onclick="spinSlots()" class="casino-button w-full py-3 text-lg font-bold">
+                    КРУТИТЬ!
+                </button>
+            </div>
+            
+            <div class="bg-gray-700/50 rounded-lg p-3">
+                <div class="text-sm font-semibold mb-2">Выплаты:</div>
+                <div class="grid grid-cols-2 gap-2 text-xs">
+                    <div>🍒🍒🍒 - x10</div>
+                    <div>🍋🍋🍋 - x15</div>
+                    <div>🍊🍊🍊 - x20</div>
+                    <div>💎💎💎 - x50</div>
+                    <div>🔔🔔🔔 - x25</div>
+                    <div>🍀🍀🍀 - x100</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Рулетка -->
+        <div class="casino-card p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4 text-center">🎡 Рулетка</h2>
+            
+            <div class="mb-4">
+                <div class="roulette-wheel" id="roulette-wheel">
+                    <div class="roulette-ball"></div>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="text-sm text-gray-300 mb-2">Ставка на:</div>
+                <div class="grid grid-cols-3 gap-2 mb-2">
+                    <button onclick="setRouletteBet('red')" class="bg-red-600 hover:bg-red-700 py-2 rounded text-sm font-semibold">
+                        Красное (x2)
+                    </button>
+                    <button onclick="setRouletteBet('black')" class="bg-gray-800 hover:bg-gray-700 py-2 rounded text-sm font-semibold">
+                        Черное (x2)
+                    </button>
+                    <button onclick="setRouletteBet('green')" class="bg-green-600 hover:bg-green-700 py-2 rounded text-sm font-semibold">
+                        Зеленое (x14)
+                    </button>
+                </div>
+                <div class="flex justify-center space-x-2 mb-2">
+                    <input type="number" id="roulette-bet-amount" class="w-20 bg-gray-700 border border-gray-600 rounded px-2 py-1 text-sm text-center" placeholder="₽50" min="10" max="1000">
+                </div>
+                <div id="roulette-bet-display" class="text-center text-sm text-gray-400">Ставка не сделана</div>
+            </div>
+            
+            <button id="roulette-spin" onclick="spinRoulette()" class="casino-button w-full py-3 text-lg font-bold">
+                КРУТИТЬ РУЛЕТКУ!
+            </button>
+        </div>
+
+        <!-- Лотерея -->
+        <div class="lottery-card p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4 text-center">🎫 Лотерея Зоны</h2>
+            
+            <div class="mb-4">
+                <div class="text-sm text-gray-300 mb-3">
+                    Выберите 6 чисел от 1 до 49:
+                </div>
+                <div class="grid grid-cols-7 gap-1 mb-4" id="lottery-numbers">
+                    <!-- Числа будут генерироваться JavaScript -->
+                </div>
+                <div class="text-center mb-2">
+                    <span class="text-sm text-gray-400">Выбрано: </span>
+                    <span id="selected-count" class="text-sm font-bold">0/6</span>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex justify-center space-x-2">
+                    <button onclick="quickPick()" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-sm">
+                        Автовыбор
+                    </button>
+                    <button onclick="clearSelection()" class="bg-gray-600 hover:bg-gray-500 px-3 py-1 rounded text-sm">
+                        Очистить
+                    </button>
+                </div>
+            </div>
+            
+            <div class="mb-4">
+                <div class="flex justify-center space-x-2">
+                    <span class="text-sm text-gray-300">Цена билета:</span>
+                    <span class="text-sm font-bold text-yellow-400">₽100</span>
+                </div>
+            </div>
+            
+            <button id="buy-ticket" onclick="buyLotteryTicket()" class="casino-button w-full py-3 text-lg font-bold" disabled>
+                КУПИТЬ БИЛЕТ
+            </button>
+        </div>
+
+        <!-- Турниры -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">🏆 Турниры</h2>
+            
+            <div class="space-y-3">
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Турнир по покеру</div>
+                        <span class="text-xs text-green-400">Регистрация</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Вход: ₽1000 • Призовой фонд: ₽50,000
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Начало: через 2 часа</span>
+                        <button onclick="joinTournament('poker')" class="bg-green-600 hover:bg-green-700 px-3 py-1 rounded text-xs font-semibold">
+                            Участвовать
+                        </button>
+                    </div>
+                </div>
+                
+                <div class="bg-gray-700/50 rounded-lg p-3">
+                    <div class="flex items-center justify-between mb-2">
+                        <div class="font-semibold text-sm">Арена удачи</div>
+                        <span class="text-xs text-blue-400">Активно</span>
+                    </div>
+                    <div class="text-xs text-gray-400 mb-2">
+                        Топ-10 игроков получают призы
+                    </div>
+                    <div class="flex items-center justify-between">
+                        <span class="text-xs text-gray-400">Осталось: 4 часа</span>
+                        <button onclick="viewTournament('arena')" class="bg-blue-600 hover:bg-blue-700 px-3 py-1 rounded text-xs font-semibold">
+                            Просмотр
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- История игр -->
+        <div class="bg-gray-800/90 backdrop-blur-sm rounded-lg p-4">
+            <h2 class="font-orbitron text-lg font-bold mb-4">📋 История игр</h2>
+            
+            <div class="space-y-2" id="game-history">
+                <div class="flex items-center justify-between bg-gray-700/50 rounded p-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-green-400">+₽250</span>
+                        <span class="text-sm text-gray-400">Автоматы</span>
+                    </div>
+                    <span class="text-xs text-gray-400">12:34</span>
+                </div>
+                
+                <div class="flex items-center justify-between bg-gray-700/50 rounded p-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-red-400">-₽100</span>
+                        <span class="text-sm text-gray-400">Рулетка</span>
+                    </div>
+                    <span class="text-xs text-gray-400">12:28</span>
+                </div>
+                
+                <div class="flex items-center justify-between bg-gray-700/50 rounded p-2">
+                    <div class="flex items-center space-x-2">
+                        <span class="text-green-400">+₽500</span>
+                        <span class="text-sm text-gray-400">Лотерея</span>
+                    </div>
+                    <span class="text-xs text-gray-400">11:45</span>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <!-- Нижняя навигация -->
+    <nav class="fixed bottom-0 left-0 right-0 bg-gray-800/95 backdrop-blur-sm border-t border-gray-700 px-4 py-2 z-50">
+        <div class="flex items-center justify-around">
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='index.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Карта</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='faction.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Фракция</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='inventory.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Инвентарь</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-gray-400" onclick="window.location.href='social.html'">
+                <div class="w-6 h-6 bg-gray-600 rounded"></div>
+                <span class="text-xs">Социальные</span>
+            </button>
+            <button class="flex flex-col items-center space-y-1 text-blue-400">
+                <div class="w-6 h-6 bg-blue-600 rounded"></div>
+                <span class="text-xs">Казино</span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Модальное окно выигрыша -->
+    <div id="win-modal" class="modal-overlay fixed inset-0 z-50 flex items-center justify-center hidden">
+        <div class="modal-content max-w-md w-full mx-4 p-6 text-center">
+            <div id="win-icon" class="text-6xl mb-4">🎉</div>
+            <h2 id="win-title" class="font-orbitron text-2xl font-bold mb-2">Победа!</h2>
+            <p id="win-description" class="text-gray-300 mb-4">Вы выиграли!</p>
+            <div id="win-amount" class="text-3xl font-bold text-green-400 mb-6">+₽500</div>
+            <button onclick="closeWinModal()" class="casino-button w-full py-3 text-lg font-bold">
+                ЗАБРАТЬ ВЫИГРЫШ
+            </button>
+        </div>
+    </div>
+
+    <script>
+        // Состояние казино
+        let casinoState = {
+            currentBet: 50,
+            rouletteBet: { type: null, amount: 0 },
+            lotteryNumbers: [],
+            jackpot: 128547,
+            money: 1247
+        };
+        
+        // Символы для автоматов
+        const slotSymbols = ['🍒', '🍋', '🍊', '💎', '🔔', '🍀', '7️⃣'];
+        
+        // Инициализация
+        document.addEventListener('DOMContentLoaded', function() {
+            generateLotteryNumbers();
+            updateCasinoMoney();
+            
+            // Обновление джекпота каждые 10 секунд
+            setInterval(() => {
+                casinoState.jackpot += Math.floor(Math.random() * 100) + 10;
+                document.getElementById('jackpot-amount').textContent = `₽${casinoState.jackpot.toLocaleString()}`;
+            }, 10000);
+        });
+        
+        // Генерация чисел для лотереи
+        function generateLotteryNumbers() {
+            const container = document.getElementById('lottery-numbers');
+            container.innerHTML = '';
+            
+            for (let i = 1; i <= 49; i++) {
+                const number = document.createElement('div');
+                number.className = 'lottery-number cursor-pointer';
+                number.textContent = i;
+                number.onclick = () => toggleLotteryNumber(i);
+                container.appendChild(number);
+            }
+        }
+        
+        // Переключение числа в лотерее
+        function toggleLotteryNumber(num) {
+            const index = casinoState.lotteryNumbers.indexOf(num);
+            const numberElement = document.querySelectorAll('.lottery-number')[num - 1];
+            
+            if (index > -1) {
+                casinoState.lotteryNumbers.splice(index, 1);
+                numberElement.classList.remove('selected');
+            } else if (casinoState.lotteryNumbers.length < 6) {
+                casinoState.lotteryNumbers.push(num);
+                numberElement.classList.add('selected');
+            }
+            
+            document.getElementById('selected-count').textContent = `${casinoState.lotteryNumbers.length}/6`;
+            document.getElementById('buy-ticket').disabled = casinoState.lotteryNumbers.length !== 6;
+        }
+        
+        // Автовыбор чисел
+        function quickPick() {
+            clearSelection();
+            const numbers = [];
+            while (numbers.length < 6) {
+                const num = Math.floor(Math.random() * 49) + 1;
+                if (!numbers.includes(num)) {
+                    numbers.push(num);
+                }
+            }
+            
+            numbers.forEach(num => toggleLotteryNumber(num));
+        }
+        
+        // Очистить выбор
+        function clearSelection() {
+            casinoState.lotteryNumbers = [];
+            document.querySelectorAll('.lottery-number').forEach(el => {
+                el.classList.remove('selected');
+            });
+            document.getElementById('selected-count').textContent = '0/6';
+            document.getElementById('buy-ticket').disabled = true;
+        }
+        
+        // Купить билет лотереи
+        function buyLotteryTicket() {
+            if (casinoState.money < 100) {
+                alert('Недостаточно денег!');
+                return;
+            }
+            
+            casinoState.money -= 100;
+            updateCasinoMoney();
+            
+            // Генерация выигрышных чисел
+            const winningNumbers = [];
+            while (winningNumbers.length < 6) {
+                const num = Math.floor(Math.random() * 49) + 1;
+                if (!winningNumbers.includes(num)) {
+                    winningNumbers.push(num);
+                }
+            }
+            
+            // Проверка совпадений
+            const matches = casinoState.lotteryNumbers.filter(num => winningNumbers.includes(num)).length;
+            
+            let winAmount = 0;
+            let message = '';
+            
+            if (matches === 6) {
+                winAmount = casinoState.jackpot;
+                message = `ДЖЕКПОТ! Вы выиграли главный приз!\n\nВаши числа: ${casinoState.lotteryNumbers.join(', ')}\nВыигрышные: ${winningNumbers.join(', ')}\n\n+₽${winAmount.toLocaleString()}`;
+                casinoState.jackpot = 50000; // Сброс джекпота
+            } else if (matches === 5) {
+                winAmount = 5000;
+                message = `5 совпадений! Отличный выигрыш!\n\nВаши числа: ${casinoState.lotteryNumbers.join(', ')}\nВыигрышные: ${winningNumbers.join(', ')}\n\n+₽${winAmount}`;
+            } else if (matches === 4) {
+                winAmount = 500;
+                message = `4 совпадения! Хороший выигрыш!\n\nВаши числа: ${casinoState.lotteryNumbers.join(', ')}\nВыигрышные: ${winningNumbers.join(', ')}\n\n+₽${winAmount}`;
+            } else if (matches === 3) {
+                winAmount = 100;
+                message = `3 совпадения! Возврат ставки!\n\nВаши числа: ${casinoState.lotteryNumbers.join(', ')}\nВыигрышные: ${winningNumbers.join(', ')}\n\n+₽${winAmount}`;
+            } else {
+                message = `Нет совпадений. Попробуйте еще раз!\n\nВаши числа: ${casinoState.lotteryNumbers.join(', ')}\nВыигрышные: ${winningNumbers.join(', ')}`;
+            }
+            
+            casinoState.money += winAmount;
+            updateCasinoMoney();
+            
+            if (winAmount > 0) {
+                showWinModal('🎉', 'Победа!', message, `+₽${winAmount.toLocaleString()}`);
+            } else {
+                alert(message);
+            }
+            
+            clearSelection();
+            addToHistory(winAmount > 0 ? `+₽${winAmount}` : '-₽100', 'Лотерея');
+        }
+        
+        // Установить ставку
+        function setBet(amount) {
+            casinoState.currentBet = amount;
+            document.getElementById('current-bet').textContent = `Текущая ставка: ₽${amount}`;
+        }
+        
+        // Крутить автоматы
+        function spinSlots() {
+            if (casinoState.money < casinoState.currentBet) {
+                alert('Недостаточно денег!');
+                return;
+            }
+            
+            casinoState.money -= casinoState.currentBet;
+            updateCasinoMoney();
+            
+            const reels = [
+                document.getElementById('slot-1'),
+                document.getElementById('slot-2'),
+                document.getElementById('slot-3')
+            ];
+            
+            // Анимация вращения
+            reels.forEach(reel => {
+                reel.classList.add('spinning');
+            });
+            
+            document.getElementById('spin-button').disabled = true;
+            
+            setTimeout(() => {
+                // Остановка вращения и определение результата
+                const results = reels.map(() => slotSymbols[Math.floor(Math.random() * slotSymbols.length)]);
+                
+                reels.forEach((reel, index) => {
+                    reel.classList.remove('spinning');
+                    reel.textContent = results[index];
+                });
+                
+                // Проверка выигрыша
+                let winAmount = 0;
+                let message = '';
+                
+                if (results[0] === results[1] && results[1] === results[2]) {
+                    // Три в ряд
+                    const symbol = results[0];
+                    switch (symbol) {
+                        case '🍒':
+                            winAmount = casinoState.currentBet * 10;
+                            message = 'Три вишни! Отлично!';
+                            break;
+                        case '🍋':
+                            winAmount = casinoState.currentBet * 15;
+                            message = 'Три лимона! Замечательно!';
+                            break;
+                        case '🍊':
+                            winAmount = casinoState.currentBet * 20;
+                            message = 'Три апельсина! Великолепно!';
+                            break;
+                        case '💎':
+                            winAmount = casinoState.currentBet * 50;
+                            message = 'Три алмаза! Бриллиантово!';
+                            break;
+                        case '🔔':
+                            winAmount = casinoState.currentBet * 25;
+                            message = 'Три колокольчика! Звонко!';
+                            break;
+                        case '🍀':
+                            winAmount = casinoState.currentBet * 100;
+                            message = 'Три листа клевера! Супер удача!';
+                            break;
+                        case '7️⃣':
+                            winAmount = casinoState.jackpot / 10; // Мини-джекпот
+                            message = 'Три семерки! Джекпот!';
+                            break;
+                    }
+                } else if (results[0] === results[1] || results[1] === results[2] || results[0] === results[2]) {
+                    // Два в ряд
+                    winAmount = casinoState.currentBet * 2;
+                    message = 'Два совпадения! Неплохо!';
+                } else {
+                    message = 'Попробуйте еще раз!';
+                }
+                
+                casinoState.money += winAmount;
+                updateCasinoMoney();
+                
+                if (winAmount > 0) {
+                    showWinModal('🎰', 'Выигрыш!', `${message}\n\n+₽${winAmount}`, `+₽${winAmount.toLocaleString()}`);
+                } else {
+                    alert(message);
+                }
+                
+                document.getElementById('spin-button').disabled = false;
+                addToHistory(winAmount > 0 ? `+₽${winAmount}` : `-₽${casinoState.currentBet}`, 'Автоматы');
+            }, 2000);
+        }
+        
+        // Установить ставку на рулетку
+        function setRouletteBet(type) {
+            const amount = parseInt(document.getElementById('roulette-bet-amount').value) || 50;
+            
+            if (casinoState.money < amount) {
+                alert('Недостаточно денег!');
+                return;
+            }
+            
+            casinoState.rouletteBet = { type, amount };
+            
+            const betNames = {
+                'red': 'Красное',
+                'black': 'Черное',
+                'green': 'Зеленое'
+            };
+            
+            document.getElementById('roulette-bet-display').textContent = `Ставка: ${betNames[type]} - ₽${amount}`;
+        }
+        
+        // Крутить рулетку
+        function spinRoulette() {
+            if (!casinoState.rouletteBet.type) {
+                alert('Сделайте ставку!');
+                return;
+            }
+            
+            if (casinoState.money < casinoState.rouletteBet.amount) {
+                alert('Недостаточно денег!');
+                return;
+            }
+            
+            casinoState.money -= casinoState.rouletteBet.amount;
+            updateCasinoMoney();
+            
+            const wheel = document.getElementById('roulette-wheel');
+            const randomRotation = Math.random() * 360 + 720; // Два полных оборота + случайный угол
+            
+            wheel.style.transform = `rotate(${randomRotation}deg)`;
+            
+            // Определение результата
+            const resultAngle = randomRotation % 360;
+            const sectorAngle = 360 / 37; // 37 секторов (0-36)
+            const resultNumber = Math.floor(resultAngle / sectorAngle);
+            
+            let winAmount = 0;
+            let resultColor = '';
+            
+            if (resultNumber === 0) {
+                resultColor = 'green';
+            } else if ([1, 3, 5, 7, 9, 12, 14, 16, 18, 19, 21, 23, 25, 27, 30, 32, 34, 36].includes(resultNumber)) {
+                resultColor = 'red';
+            } else {
+                resultColor = 'black';
+            }
+            
+            if (casinoState.rouletteBet.type === resultColor) {
+                const multipliers = {
+                    'red': 2,
+                    'black': 2,
+                    'green': 14
+                };
+                winAmount = casinoState.rouletteBet.amount * multipliers[resultColor];
+            }
+            
+            setTimeout(() => {
+                casinoState.money += winAmount;
+                updateCasinoMoney();
+                
+                const resultMessage = `Выпало: ${resultNumber} (${resultColor === 'red' ? 'Красное' : resultColor === 'black' ? 'Черное' : 'Зеленое'})`;
+                
+                if (winAmount > 0) {
+                    showWinModal('🎡', 'Выигрыш в рулетке!', resultMessage, `+₽${winAmount.toLocaleString()}`);
+                } else {
+                    alert(`${resultMessage}\n\nСтавка проиграна!`);
+                }
+                
+                addToHistory(winAmount > 0 ? `+₽${winAmount}` : `-₽${casinoState.rouletteBet.amount}`, 'Рулетка');
+                
+                casinoState.rouletteBet = { type: null, amount: 0 };
+                document.getElementById('roulette-bet-display').textContent = 'Ставка не сделана';
+            }, 3000);
+        }
+        
+        // Участвовать в турнире
+        function joinTournament(type) {
+            const tournaments = {
+                'poker': {
+                    name: 'Турнир по покеру',
+                    entry: 1000,
+                    prize: 50000
+                }
+            };
+            
+            const tournament = tournaments[type];
+            if (tournament) {
+                if (casinoState.money < tournament.entry) {
+                    alert('Недостаточно денег для участия!');
+                    return;
+                }
+                
+                if (confirm(`Участие в турнире:\n\n${tournament.name}\nВход: ₽${tournament.entry}\nПризовой фонд: ₽${tournament.prize.toLocaleString()}\n\nПодтвердить участие?`)) {
+                    casinoState.money -= tournament.entry;
+                    updateCasinoMoney();
+                    alert('Вы зарегистрированы на турнир!\n\nТурнир начнется через 2 часа.');
+                }
+            }
+        }
+        
+        // Просмотр турнира
+        function viewTournament(type) {
+            alert('Турнир "Арена удачи"\n\nЛидеры:\n1. CasinoKing - 15,420 очков\n2. LuckyStar - 14,890 очков\n3. MoneyMaker - 13,650 очков\n\nВаше место: 47 из 156');
+        }
+        
+        // Показать модальное окно выигрыша
+        function showWinModal(icon, title, description, amount) {
+            document.getElementById('win-icon').textContent = icon;
+            document.getElementById('win-title').textContent = title;
+            document.getElementById('win-description').textContent = description;
+            document.getElementById('win-amount').textContent = amount;
+            document.getElementById('win-modal').classList.remove('hidden');
+        }
+        
+        // Закрыть модальное окно выигрыша
+        function closeWinModal() {
+            document.getElementById('win-modal').classList.add('hidden');
+        }
+        
+        // Добавить в историю
+        function addToHistory(amount, game) {
+            const history = document.getElementById('game-history');
+            const entry = document.createElement('div');
+            entry.className = 'flex items-center justify-between bg-gray-700/50 rounded p-2';
+            
+            const now = new Date();
+            const time = `${now.getHours()}:${now.getMinutes().toString().padStart(2, '0')}`;
+            
+            entry.innerHTML = `
+                <div class="flex items-center space-x-2">
+                    <span class="${amount.startsWith('+') ? 'text-green-400' : 'text-red-400'}">${amount}</span>
+                    <span class="text-sm text-gray-400">${game}</span>
+                </div>
+                <span class="text-xs text-gray-400">${time}</span>
+            `;
+            
+            history.insertBefore(entry, history.firstChild);
+            
+            // Ограничить историю до 10 записей
+            while (history.children.length > 10) {
+                history.removeChild(history.lastChild);
+            }
+        }
+        
+        // Обновить деньги в казино
+        function updateCasinoMoney() {
+            document.getElementById('casino-money').textContent = casinoState.money.toLocaleString();
+            localStorage.setItem('casinoMoney', casinoState.money.toString());
+        }
+    </script>
+</body>
+</html>
